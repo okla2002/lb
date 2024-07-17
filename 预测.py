@@ -35,7 +35,7 @@ for i in range(4):
     if i == 3:
         plt.ylim(1000, 5000)
     plt.xlim(-20, 1100)
-plt.show()
+plt.show(block=False)  # 同时显示图形
 
 # 数据处理和准备
 def ConvertData(dataset, t_width):
@@ -91,7 +91,7 @@ plt.legend(loc='upper right', fontsize=12)
 plt.xlabel('数据点', fontsize=13)
 plt.ylabel('放电容量 (Ah)', fontsize=13)
 plt.title('随机森林模型预测训练数据的放电容量', fontsize=14)
-plt.show()
+plt.show(block=False)  # 同时显示图形
 
 # 测试集上的预测结果
 predicted_test = rf_model.predict(X_test[300:800])
@@ -105,7 +105,7 @@ plt.xlabel('循环次数', fontsize=13)
 plt.ylabel('放电容量 (Ah)', fontsize=13)
 plt.title('随机森林模型预测测试数据（CS2-36）的放电容量', fontsize=14)
 plt.legend(loc='upper right', fontsize=12)
-plt.show()
+plt.show(block=False)  # 同时显示图形
 
 # 计算测试集预测结果的均方误差
 mse = mean_squared_error(y_test[300:800], predicted_test)
@@ -131,4 +131,4 @@ plt.legend(loc='upper right', fontsize=12)
 plt.xlabel('循环次数', fontsize=13)
 plt.ylabel('放电容量 (Ah)', fontsize=13)
 plt.title('未来50个循环的放电容量预测', fontsize=14)
-plt.show()
+plt.show()  # 显示所有图形
