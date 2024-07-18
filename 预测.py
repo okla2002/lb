@@ -7,6 +7,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from tqdm import tqdm
+from sklearn.model_selection import GridSearchCV
 
 # 指定字体以避免空白格问题
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 使用SimHei字体
@@ -65,9 +66,9 @@ X_test, y_test = ConvertData([df_36], 50)
 print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
 # 随机选择500条数据进行训练
-idx = np.random.permutation(np.arange(0, X_train.shape[0], 1))[:500]
-X_train = X_train[idx]
-y_train = y_train[idx]
+# idx = np.random.permutation(np.arange(0, X_train.shape[0], 1))[:500]
+# X_train = X_train[idx]
+# y_train = y_train[idx]
 
 # 数据形状调整
 X_train = X_train.reshape([X_train.shape[0], X_train.shape[1]])
@@ -76,9 +77,38 @@ y_train = y_train.reshape([y_train.shape[0]])
 y_test = y_test.reshape([y_test.shape[0]])
 print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
-# 模型建立
-rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+# # 使用网格搜索进行超参数优化模型
+# param_grid = {
+#     'n_estimators': [50, 100, 200],
+#     'max_features': ['auto', 'sqrt', 'log2'],
+#     'max_depth': [10, 20, 30, None],
+#     'min_samples_split': [2, 5, 10],
+#     'min_samples_leaf': [1, 2, 4]
+# }
+#
+# # 交叉验证和网格搜索
+# grid_search = GridSearchCV(estimator=RandomForestRegressor(random_state=42), param_grid=param_grid, cv=3, n_jobs=-1, verbose=2)
+# grid_search.fit(X_train, y_train)
+#
+# # 输出最佳参数组合
+# print("最佳参数组合：", grid_search.best_params_)
+#
+# # 使用最佳参数组合训练模型
+# rf_model = grid_search.best_estimator_
+# rf_model.fit(X_train, y_train)
+
+# 优化后的代码
+rf_model = RandomForestRegressor(n_estimators=50,
+                                 max_depth=20,
+                                 min_samples_split=10,
+                                 min_samples_leaf=4,
+                                 max_features='sqrt',
+                                 random_state=42)
 rf_model.fit(X_train, y_train)
+
+# 优化前的代码
+# rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+# rf_model.fit(X_train, y_train)
 
 # 训练集上的预测结果
 predicted_train = rf_model.predict(X_train)
@@ -111,17 +141,27 @@ plt.show(block=False)  # 同时显示图形
 mse = mean_squared_error(y_test[300:800], predicted_test)
 print("均方误差 (MSE)：", mse)
 
-# 未来数据点的预测
-initial = X_test[500]
+# 未来数据点的预测（优化前的代码）
+# initial = X_test[500]
+# results = []
+# for i in tqdm(range(50), ascii=True):  # 添加ascii=True参数
+#     if i == 0:
+#         res = rf_model.predict(initial.reshape(1, -1))
+#         results.append(res[0])
+#     else:
+#         initial = np.append(initial[1:], res)
+#         res = rf_model.predict(initial.reshape(1, -1))
+#         results.append(res[0])
+
+# 未来数据点的预测（优化后的代码）
+# 在递归预测未来数据点时，使用滚动窗口技术，以减少误差累积
+initial = X_test[500].reshape(1, -1)
 results = []
 for i in tqdm(range(50), ascii=True):  # 添加ascii=True参数
-    if i == 0:
-        res = rf_model.predict(initial.reshape(1, -1))
-        results.append(res[0])
-    else:
-        initial = np.append(initial[1:], res)
-        res = rf_model.predict(initial.reshape(1, -1))
-        results.append(res[0])
+    res = rf_model.predict(initial)
+    results.append(res[0])
+    initial = np.roll(initial, -1)
+    initial[0, -1] = res.item()
 
 # 可视化未来数据点的预测结果
 fig = plt.figure(figsize=(12, 4), dpi=150)
