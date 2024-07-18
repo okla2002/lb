@@ -8,6 +8,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from tqdm import tqdm
 from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import mean_absolute_error, r2_score
 
 # 指定字体以避免空白格问题
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 使用SimHei字体
@@ -140,6 +141,11 @@ plt.show(block=False)  # 同时显示图形
 # 计算测试集预测结果的均方误差
 mse = mean_squared_error(y_test[300:800], predicted_test)
 print("均方误差 (MSE)：", mse)
+
+# mae = mean_absolute_error(y_test[300:800], predicted_test)
+# r2 = r2_score(y_test[300:800], predicted_test)
+# print("平均绝对误差 (MAE)：", mae)
+# print("决定系数 (R²)：", r2)
 
 # 未来数据点的预测（优化前的代码）
 # initial = X_test[500]
